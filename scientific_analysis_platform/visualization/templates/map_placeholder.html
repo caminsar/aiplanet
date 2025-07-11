@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Scientific Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>{{ title }}</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+            <li><a href="{{ url_for('visualization_home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('map_placeholder_page') }}">Map Placeholder</a></li>
+            <li><a href="{{ url_for('chart_placeholder_page') }}">Chart Placeholder</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>Interactive Map Area</h2>
+        <p>This page is designated for displaying interactive geographical maps. Future integrations will allow for dynamic visualization of various spatial datasets relevant to the Changjiang River basin study.</p>
+        <div class="placeholder-container map-container">
+            <p><strong>[Map Area]</strong><br>Interactive map (e.g., Leaflet, OpenLayers, Mapbox GL JS) will be embedded here.<br>Visualizations will include sampling points, hydrological networks, wetland extents, land use changes, etc.</p>
+        </div>
+        <p>Users will be able to pan, zoom, toggle layers, and query features on the map.</p>
+    </main>
+    <footer>
+        <p>&copy; 2023 Scientific Analysis Platform</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+/* Basic styling for the Scientific Analysis Platform */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #0044cc; /* A more scientific blue */
+    color: #ffffff;
+    padding: 1.2em 0;
+    text-align: center;
+    border-bottom: 3px solid #002266;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    background-color: #336699; /* Complementary blue */
+}
+
+nav ul li {
+    display: inline-block; /* Use inline-block for better spacing control */
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 1em 1.5em; /* More padding */
+    display: block; /* Make the whole area clickable */
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover, nav ul li a.active {
+    background-color: #0044cc; /* Darker blue on hover/active */
+}
+
+main {
+    padding: 25px;
+    text-align: left; /* Content usually better left-aligned */
+    flex-grow: 1; /* Allows main to fill available space, pushing footer down */
+    max-width: 1200px; /* Max width for content for better readability */
+    margin: 20px auto; /* Center content area */
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+main h2 {
+    color: #0044cc;
+}
+
+.placeholder-container {
+    width: 90%;
+    height: 350px;
+    margin: 25px auto;
+    border: 2px dashed #ccc;
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #777;
+    font-size: 1.2em;
+    border-radius: 6px;
+}
+
+footer {
+    text-align: center;
+    padding: 1.5em;
+    background-color: #222;
+    color: #fff;
+    /* position: fixed; remove if using flex-grow on main for sticky footer */
+    /* bottom: 0; */
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Basic responsive design for navigation */
+@media (max-width: 768px) {
+    nav ul li {
+        display: block; /* Stack navigation items vertically on small screens */
+        text-align: center;
+    }
+    nav ul li a {
+        padding: 0.8em;
+    }
+    main {
+        margin: 10px;
+        padding: 15px;
+    }
+}

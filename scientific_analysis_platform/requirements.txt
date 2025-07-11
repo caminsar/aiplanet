@@ -1,0 +1,28 @@
+# Python dependencies for the Scientific Analysis Platform
+
+Flask>=2.0.0,<4.0.0
+SQLAlchemy>=1.4.0,<3.0.0
+
+# Future dependencies might include:
+# For specific database connectors (e.g., if using PostgreSQL with SQLAlchemy):
+# psycopg2-binary
+
+# For graph databases (e.g., Neo4j):
+# neo4j
+
+# For data handling and numerical operations:
+# pandas
+# numpy
+# geopandas
+
+# For AI/ML tasks (if models are run within the platform's Python env):
+# scikit-learn
+# tensorflow
+# torch
+
+# For specific visualization libraries if used server-side (less common for web):
+# matplotlib (more for generating static images or use with some web backends)
+
+# For interacting with external LLMs or services:
+# openai
+# requests

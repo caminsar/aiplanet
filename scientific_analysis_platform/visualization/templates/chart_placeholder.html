@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Scientific Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>{{ title }}</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+            <li><a href="{{ url_for('visualization_home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('map_placeholder_page') }}">Map Placeholder</a></li>
+            <li><a href="{{ url_for('chart_placeholder_page') }}">Chart Placeholder</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>Data Charts & Graphs Area</h2>
+        <p>This section is dedicated to presenting data through various charting methods. Future developments will incorporate libraries like D3.js, ECharts, or Plotly.js for rich, interactive data visualizations.</p>
+        <div class="placeholder-container chart-container">
+            <p><strong>[Chart Area]</strong><br>Interactive charts (e.g., time series, scatter plots, bar charts) will be rendered here.<br>Data will include hydrological parameters, sediment concentrations, ecological indicators, model outputs, etc.</p>
+        </div>
+        <p>Users will be able to customize chart views, compare datasets, and export graphical representations.</p>
+    </main>
+    <footer>
+        <p>&copy; 2023 Scientific Analysis Platform</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
