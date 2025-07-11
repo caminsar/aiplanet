@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Scientific Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .catalog-container {
+            padding: 20px;
+        }
+        .data-type-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+        .data-type-card h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .data-type-card p {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        .data-type-card .api-link, .data-type-card .ui-link {
+            font-size: 0.9em;
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .data-type-card .api-link:hover, .data-type-card .ui-link:hover {
+            text-decoration: underline;
+        }
+        .summary-stats {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #eef;
+            border-left: 5px solid #0044cc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ title }}</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+            <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('visualization_bp.map_page') }}">Interactive Map</a></li>
+            <li><a href="{{ url_for('visualization_bp.chart_page') }}">Data Charts</a></li>
+            <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+            <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div class="catalog-container">
+            <h2>Available Data Resources</h2>
+            <p>This catalog provides an overview of the primary data types and resources available within the platform. You can explore these datasets through their respective API endpoints or visualization modules.</p>
+
+            <div class="summary-stats">
+                <h4>Quick Stats:</h4>
+                <p>Total Hydrological Stations: <strong>{{ station_count }}</strong></p>
+                <p>Total Wetland Areas Tracked: <strong>{{ wetland_count }}</strong></p>
+                <!-- Add more stats as available -->
+            </div>
+
+            {% if data_types %}
+                {% for dtype in data_types %}
+                <div class="data-type-card">
+                    <h3>{{ dtype.name }}</h3>
+                    <p>{{ dtype.description }}</p>
+                    {% if dtype.api_endpoint %}
+                        <a href="{{ dtype.api_endpoint }}" target="_blank" class="api-link">View API Endpoint</a>
+                    {% endif %}
+                    {% if dtype.api_example %}
+                        <p style="font-size:0.85em; color:#555;">Example API call: <code>{{ dtype.api_example }}</code></p>
+                    {% endif %}
+                    {% if dtype.ui_view_url %}
+                         <a href="{{ url_for(dtype.ui_view_url.strip('/')) if '.' not in dtype.ui_view_url else url_for(dtype.ui_view_url) }}" class="ui-link">View in UI</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No data types are currently listed in the catalog.</p>
+            {% endif %}
+        </div>
+    </main>
+    <footer>
+        <p>&copy; {{ now.year if now else '2023' }} Scientific Analysis Platform</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Update active link for catalog
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('nav ul li a');
+            const currentPath = "{{ url_for('visualization_bp.data_catalog_page') }}";
+            navLinks.forEach(link => {
+                link.classList.remove('active'); // Remove from all first
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

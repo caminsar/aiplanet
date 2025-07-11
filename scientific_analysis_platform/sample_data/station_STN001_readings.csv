@@ -1,0 +1,13 @@
+timestamp,parameter_name,value,unit,quality_flag
+2023-01-01T00:00:00Z,WaterLevel,52.5,m,Good
+2023-01-01T06:00:00Z,WaterLevel,52.4,m,Good
+2023-01-01T12:00:00Z,WaterLevel,52.6,m,Good
+2023-01-01T18:00:00Z,WaterLevel,52.5,m,Good
+2023-01-02T00:00:00Z,WaterLevel,52.7,m,Good
+2023-01-01T00:00:00Z,FlowRate,12000,m3/s,Good
+2023-01-01T06:00:00Z,FlowRate,11800,m3/s,Good
+2023-01-01T12:00:00Z,FlowRate,12200,m3/s,Good
+2023-01-01T18:00:00Z,FlowRate,12100,m3/s,Good
+2023-01-02T00:00:00Z,FlowRate,12500,m3/s,Good
+2023-01-01T00:00:00Z,SedimentConcentration,0.8,kg/m3,Estimated
+2023-01-02T00:00:00Z,SedimentConcentration,0.82,kg/m3,Estimated

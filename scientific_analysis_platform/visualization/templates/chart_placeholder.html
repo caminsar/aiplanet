@@ -5,6 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Scientific Analysis Platform</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <style>
+        .chart-controls {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .chart-controls label {
+            font-weight: bold;
+        }
+        .chart-controls select, .chart-controls input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .chart-container-actual { /* Renamed to avoid conflict */
+            width: 100%; /* Responsive width */
+            max-width: 900px; /* Max width for readability */
+            height: 450px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding:10px;
+            border-radius: 6px;
+        }
+         main {
+            max-width: 95%; /* Allow chart to be wider */
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -13,22 +48,173 @@
     <nav>
         <ul>
             <li><a href="{{ url_for('hello_world') }}">Home</a></li>
-            <li><a href="{{ url_for('visualization_home') }}">Visualization Hub</a></li>
-            <li><a href="{{ url_for('map_placeholder_page') }}">Map Placeholder</a></li>
-            <li><a href="{{ url_for('chart_placeholder_page') }}">Chart Placeholder</a></li>
+            <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('visualization_bp.map_page') }}">Interactive Map</a></li>
+            <li><a href="{{ url_for('visualization_bp.chart_page') }}">Data Charts</a></li>
+            <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+            <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
         </ul>
     </nav>
     <main>
-        <h2>Data Charts & Graphs Area</h2>
-        <p>This section is dedicated to presenting data through various charting methods. Future developments will incorporate libraries like D3.js, ECharts, or Plotly.js for rich, interactive data visualizations.</p>
-        <div class="placeholder-container chart-container">
-            <p><strong>[Chart Area]</strong><br>Interactive charts (e.g., time series, scatter plots, bar charts) will be rendered here.<br>Data will include hydrological parameters, sediment concentrations, ecological indicators, model outputs, etc.</p>
+        <h2>Time Series Data Charts</h2>
+        <p>Select a hydrological station and parameter to visualize its time series data.</p>
+
+        <div class="chart-controls">
+            <div>
+                <label for="stationSelect">Select Station:</label>
+                <select id="stationSelect">
+                    <option value="">Loading stations...</option>
+                </select>
+            </div>
+            <div>
+                <label for="parameterSelect">Select Parameter:</label>
+                <select id="parameterSelect">
+                    <option value="WaterLevel">Water Level (m)</option>
+                    <option value="FlowRate">Flow Rate (m³/s)</option>
+                    <option value="SedimentConcentration">Sediment Conc. (kg/m³)</option>
+                    <!-- Add more parameters as needed -->
+                </select>
+            </div>
         </div>
-        <p>Users will be able to customize chart views, compare datasets, and export graphical representations.</p>
+
+        <div class="chart-container-actual">
+            <canvas id="timeSeriesChart"></canvas>
+        </div>
+        <p id="chartStatus" style="text-align:center;"></p>
+
+        <p>This chart displays data fetched from the platform's API. Future enhancements will include date range selection, multiple parameter plotting, and comparison across stations.</p>
     </main>
     <footer>
-        <p>&copy; 2023 Scientific Analysis Platform</p>
+        <p>&copy; {{ now.year }} Scientific Analysis Platform</p>
     </footer>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stationSelect = document.getElementById('stationSelect');
+            const parameterSelect = document.getElementById('parameterSelect');
+            const chartStatus = document.getElementById('chartStatus');
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            let timeSeriesChart = null; // To hold the chart instance
+
+            // Function to fetch and display chart data
+            function loadChartData() {
+                const selectedStationId = stationSelect.value;
+                const selectedParameter = parameterSelect.value;
+
+                if (!selectedStationId) {
+                    chartStatus.textContent = "Please select a station.";
+                    if (timeSeriesChart) timeSeriesChart.destroy(); // Clear previous chart
+                    return;
+                }
+
+                chartStatus.textContent = "Loading chart data...";
+                // API endpoint from data_api_bp
+                const apiUrl = `{{ url_for('data_api.get_station_readings', station_id_code='STATION_ID_PLACEHOLDER') }}`.replace('STATION_ID_PLACEHOLDER', selectedStationId) + `?parameter_name=${selectedParameter}`;
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (timeSeriesChart) {
+                            timeSeriesChart.destroy(); // Destroy existing chart before creating new one
+                        }
+                        if (data.readings && data.readings.length > 0) {
+                            const labels = data.readings.map(r => new Date(r.timestamp)); // Chart.js expects Date objects for time scale
+                            const values = data.readings.map(r => r.value);
+                            const unit = data.readings[0].unit; // Assume unit is consistent
+
+                            timeSeriesChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: `${selectedParameter} at ${data.station_name} (${unit})`,
+                                        data: values,
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        tension: 0.1,
+                                        fill: false
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        x: {
+                                            type: 'time',
+                                            time: {
+                                                unit: 'day', // Adjust time unit based on data density
+                                                tooltipFormat: 'yyyy-MM-dd HH:mm',
+                                                displayFormats: {
+                                                    day: 'yyyy-MM-dd'
+                                                }
+                                            },
+                                            title: { display: true, text: 'Timestamp' }
+                                        },
+                                        y: {
+                                            title: { display: true, text: `${selectedParameter} (${unit})` }
+                                        }
+                                    },
+                                    plugins: {
+                                        tooltip: { mode: 'index', intersect: false },
+                                        title: { display: true, text: `Time Series for ${data.station_name}` }
+                                    }
+                                }
+                            });
+                            chartStatus.textContent = ""; // Clear status
+                        } else {
+                            chartStatus.textContent = `No '${selectedParameter}' data found for station ${data.station_name}.`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching or processing chart data:', error);
+                        chartStatus.textContent = `Failed to load chart data: ${error.message}`;
+                        if (timeSeriesChart) timeSeriesChart.destroy();
+                    });
+            }
+
+            // Populate station dropdown
+            // API endpoint from visualization_bp
+            fetch("{{ url_for('visualization_bp.available_stations_for_charting') }}")
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(stations => {
+                    stationSelect.innerHTML = '<option value="">-- Select a Station --</option>'; // Clear loading message
+                    if (Array.isArray(stations)) {
+                        stations.forEach(station => {
+                            const option = document.createElement('option');
+                            option.value = station.id; // station_id_code
+                            option.textContent = station.name;
+                            stationSelect.appendChild(option);
+                        });
+                    } else {
+                         stationSelect.innerHTML = '<option value="">Error loading stations</option>';
+                         console.error("Stations for dropdown is not an array: ", stations);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stations for dropdown:', error);
+                    stationSelect.innerHTML = '<option value="">Error loading stations</option>';
+                    chartStatus.textContent = "Could not load station list for dropdown.";
+                });
+
+            // Event listeners for controls
+            stationSelect.addEventListener('change', loadChartData);
+            parameterSelect.addEventListener('change', loadChartData);
+
+            // Update active link for chart page
+            const navLinks = document.querySelectorAll('nav ul li a');
+            const currentPath = "{{ url_for('visualization_bp.chart_page') }}";
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

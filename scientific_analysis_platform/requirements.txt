@@ -1,28 +1,28 @@
 # Python dependencies for the Scientific Analysis Platform
 
 Flask>=2.0.0,<4.0.0
-SQLAlchemy>=1.4.0,<3.0.0
+SQLAlchemy>=1.4.0,<3.0.0 # Core ORM
+GeoAlchemy2>=0.12,<1.0  # For PostGIS geometry types with SQLAlchemy
+psycopg2-binary>=2.9,<3.0 # PostgreSQL adapter for Python (binary version for easier install)
+requests>=2.25,<3.0.0    # For making HTTP requests (e.g., internal API calls in visualization routes)
+python-dateutil>=2.8,<3.0 # For flexible datetime parsing (used in station_reading_importer)
+shapely>=2.0,<3.0 # For geometry object manipulation (used with GeoAlchemy2)
 
 # Future dependencies might include:
-# For specific database connectors (e.g., if using PostgreSQL with SQLAlchemy):
-# psycopg2-binary
 
 # For graph databases (e.g., Neo4j):
 # neo4j
 
-# For data handling and numerical operations:
+# For more advanced data handling and numerical operations:
 # pandas
 # numpy
-# geopandas
+# geopandas (already covered by shapely for basic geometry, but pandas integration is useful)
+# xarray
 
 # For AI/ML tasks (if models are run within the platform's Python env):
 # scikit-learn
 # tensorflow
 # torch
 
-# For specific visualization libraries if used server-side (less common for web):
-# matplotlib (more for generating static images or use with some web backends)
-
 # For interacting with external LLMs or services:
 # openai
-# requests

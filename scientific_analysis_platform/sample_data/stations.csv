@@ -1,0 +1,6 @@
+station_id_code,name,latitude,longitude,river_name,elevation_m,operator
+STN001,Yichang Station,30.70,111.29,Yangtze River,50,CWRC
+STN002,Hankou Station,30.58,114.27,Yangtze River,25,CWRC
+STN003,Datong Station,30.77,117.62,Yangtze River,10,CWRC
+STN004,Chenglingji Station,29.44,113.14,Dongting Lake Outlet,22,Hunan Hydrology
+STN005,Xiangtan Station,27.85,112.90,Xiang River,45,Hunan Hydrology

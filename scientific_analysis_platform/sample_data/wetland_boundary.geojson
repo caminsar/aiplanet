@@ -1,0 +1,59 @@
+{
+  "type": "FeatureCollection",
+  "name": "sample_wetlands",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "wetland_id_code": "WL001",
+        "name": "East Dongting Sample Patch",
+        "type": "Lacustrine",
+        "description": "A small representative patch of East Dongting Lake wetland area."
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [112.90, 29.30],
+              [113.00, 29.30],
+              [113.00, 29.35],
+              [112.95, 29.38],
+              [112.90, 29.35],
+              [112.90, 29.30]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "wetland_id_code": "WL002",
+        "name": "Riverine Wetland Snippet",
+        "type": "Riverine",
+        "description": "A small snippet representing a riverine wetland."
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [114.20, 30.50],
+              [114.22, 30.50],
+              [114.22, 30.51],
+              [114.20, 30.51],
+              [114.20, 30.50]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

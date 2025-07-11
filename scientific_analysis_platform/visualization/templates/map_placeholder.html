@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Scientific Analysis Platform</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        .map-container-actual { /* Renamed to avoid conflict with .placeholder-container if used elsewhere */
+            width: 100%; /* Take full width of main content area */
+            height: 500px; /* Increased height */
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        /* Ensure main content area gives enough space */
+        main {
+            max-width: 95%; /* Allow map to be wider */
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -13,22 +30,97 @@
     <nav>
         <ul>
             <li><a href="{{ url_for('hello_world') }}">Home</a></li>
-            <li><a href="{{ url_for('visualization_home') }}">Visualization Hub</a></li>
-            <li><a href="{{ url_for('map_placeholder_page') }}">Map Placeholder</a></li>
-            <li><a href="{{ url_for('chart_placeholder_page') }}">Chart Placeholder</a></li>
+            <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('visualization_bp.map_page') }}">Interactive Map</a></li>
+            <li><a href="{{ url_for('visualization_bp.chart_page') }}">Data Charts</a></li>
+            <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+            <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
         </ul>
     </nav>
     <main>
-        <h2>Interactive Map Area</h2>
-        <p>This page is designated for displaying interactive geographical maps. Future integrations will allow for dynamic visualization of various spatial datasets relevant to the Changjiang River basin study.</p>
-        <div class="placeholder-container map-container">
-            <p><strong>[Map Area]</strong><br>Interactive map (e.g., Leaflet, OpenLayers, Mapbox GL JS) will be embedded here.<br>Visualizations will include sampling points, hydrological networks, wetland extents, land use changes, etc.</p>
+        <h2>Interactive Map: Station Locations</h2>
+        <p>This map displays hydrological station locations fetched from the platform's API. Click on a marker to see station details.</p>
+
+        <div id="map" class="map-container-actual">
+            <!-- Leaflet map will be initialized here -->
         </div>
-        <p>Users will be able to pan, zoom, toggle layers, and query features on the map.</p>
+
+        <p>Further enhancements will include options to display wetland boundaries, overlay raster data, and query features directly on the map.</p>
     </main>
     <footer>
-        <p>&copy; 2023 Scientific Analysis Platform</p>
+        <p>&copy; {{ now.year }} Scientific Analysis Platform</p>
     </footer>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <!-- Platform's main JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Leaflet map
+            // Centered roughly on the middle Yangtze River area
+            const map = L.map('map').setView([30.5, 114.0], 7); // Latitude, Longitude, Zoom level
+
+            // Add a tile layer (OpenStreetMap is a common free choice)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Fetch station data from the API
+            // Using the relative path to the API endpoint, assuming same origin
+            fetch("{{ url_for('data_api.list_stations') }}")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(stations => {
+                    if (!Array.isArray(stations)) {
+                        console.error("Fetched stations data is not an array:", stations);
+                        alert("Error: Received invalid station data format from API.");
+                        return;
+                    }
+                    stations.forEach(station => {
+                        if (station.latitude != null && station.longitude != null) {
+                            const marker = L.marker([station.latitude, station.longitude]).addTo(map);
+                            let popupContent = `<b>${station.name}</b><br>ID: ${station.station_id_code}`;
+                            if (station.river_name) popupContent += `<br>River: ${station.river_name}`;
+                            if (station.operator) popupContent += `<br>Operator: ${station.operator}`;
+                            if (station.elevation_m != null) popupContent += `<br>Elevation: ${station.elevation_m}m`;
+
+                            // Add link to station detail page if available
+                            // popupContent += `<br><a href="/api/data/stations/${station.station_id_code}/details" target="_blank">View Details</a>`;
+                            // Or link to a future UI page for station details:
+                            // popupContent += `<br><a href="{{url_for('visualization_bp.station_detail_page', station_code=station.station_id_code)}}">View Details</a>`;
+                            // For now, just basic info.
+
+                            marker.bindPopup(popupContent);
+                        } else {
+                            console.warn("Station data missing lat/lon:", station);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching or processing station data:', error);
+                    alert('Failed to load station data on the map. See console for details.');
+                });
+
+            // Update active link for map page
+            const navLinks = document.querySelectorAll('nav ul li a');
+            const currentPath = "{{ url_for('visualization_bp.map_page') }}";
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
