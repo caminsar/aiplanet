@@ -14,36 +14,35 @@ The platform aims to support research on the Changjiang River Basin by integrati
     *   Write clear and concise comments for complex logic.
     *   Add Python docstrings to all modules, classes, and functions, explaining their purpose, arguments, and return values. Use a consistent docstring format (e.g., Google style, reStructuredText).
 4.  **Placeholder Usage & Conceptual Components**:
-    *   When implementing skeleton frameworks, interfaces, or conceptual components (like the initial RAG pipeline or model wrappers), clearly mark placeholders (e.g., using `# TODO:`, `NotImplementedError`, or descriptive comments like `# Placeholder for actual database interaction`, `# Simulated LLM call`).
-    *   Ensure docstrings and comments explicitly state when a component is a conceptual placeholder or uses simulated/mocked behavior, and briefly outline what a real implementation would entail.
+    *   When implementing skeleton frameworks, interfaces, or conceptual components (like the RAG pipeline, model wrappers, EKG features), clearly mark placeholders (e.g., using `# TODO:`, `NotImplementedError`, or descriptive comments like `# Placeholder for actual database interaction`, `# Simulated LLM call`).
+    *   Ensure docstrings and comments explicitly state when a component is a conceptual placeholder or uses simulated/mocked behavior, and briefly outline what a real implementation would entail. This is crucial for AI-driven features.
 5.  **Error Handling**: Implement basic error handling (e.g., `try-except` blocks) where appropriate, especially for I/O operations, API calls, or database interactions. Log errors or provide informative messages.
-6.  **Dependencies**: If new dependencies are added, ensure they are justifiable and add them to `requirements.txt` with appropriate version pinning (e.g., `library>=1.0,<2.0`).
+6.  **Dependencies**: If new dependencies are added, ensure they are justifiable and add them to `requirements.txt` with appropriate version pinning (e.g., `library>=1.0,<2.0`). Note any client-side library CDNs in relevant HTML files.
 7.  **Testing**: While full test development might be a separate step, keep testability in mind. Think about how your code could be tested. (Future: Specific testing guidelines will be added).
 8.  **Security**: Be mindful of security best practices, especially for web application components. For now, primary focus is on functionality.
-9.  **Configuration**: Use environment variables for sensitive or environment-specific configurations (e.g., `POSTGRES_DB_URL`, API keys). Refer to `docker-compose.yml` and `README.md` for examples.
+9.  **Configuration**: Use environment variables for sensitive or environment-specific configurations (e.g., `POSTGRES_DB_URL`, API keys). Refer to `docker-compose.yml` and `README.md` for examples. Data file paths (like for EKG JSON) should be configurable or clearly documented.
 
 ## Module-Specific Notes
 
 *   **`app.py` (Flask Application)**:
-    *   Organize routes into Blueprints (e.g., `data_api_bp`, `visualization_bp`).
-    *   Use an app factory pattern (`create_app`) for better structure.
+    *   Organize routes into Blueprints. The app factory pattern (`create_app`) is used.
+    *   Ensure creation of necessary directories (like `data/` for EKG JSON) on startup if they might not exist.
 *   **`data_management/`**:
-    *   Database models are defined in `models.py` using SQLAlchemy and GeoAlchemy2 for PostGIS.
-    *   API routes for data are in `api_routes.py`.
-    *   Importers in `importers/` should be robust enough for sample data and extendable.
-    *   Modules like `spatial_analysis.py` and `data_fusion.py` are currently conceptual; their further development should focus on integrating established Python libraries (SciPy, GeoPandas, etc.).
+    *   Database models in `models.py` use SQLAlchemy/GeoAlchemy2 for PostGIS.
+    *   `spatial_analysis.py` and `data_fusion.py` remain conceptual.
 *   **`model_integration/`**:
-    *   The `ScientificModel` interface in `model_interface.py` is key.
-    *   Wrappers in `models/` (e.g., `MaxEntModelWrapper`, `SWATModelWrapper`) are conceptual. Future work should detail how they would interact with actual model executables or libraries.
+    *   Wrappers in `models/` are conceptual.
 *   **`visualization/`**:
-    *   Templates should be clean and use client-side JavaScript for interactivity (e.g., Leaflet, Chart.js).
-    *   UI-supporting API endpoints can be part of the visualization Blueprint if they are solely for that UI component's needs (e.g., populating a dropdown).
+    *   Templates use client-side JavaScript (Leaflet, Chart.js, Vis.js). Ensure CDNs are correctly linked or local static assets are properly served.
+    *   UI-supporting APIs within the visualization blueprint should be minimal and clearly justified.
 *   **`ai_knowledge_graph/`**:
-    *   Currently a conceptual skeleton. Development will require choosing a graph database technology and query language.
+    *   The EKG is now implemented with a `LightweightGraphStore` using JSON file persistence (e.g., `data/evolution_graph_data.json`). This is a basic implementation; future work might involve a proper graph database.
+    *   `graph_schema.py` has been extended for evolutionary aspects.
+    *   APIs in `api_routes_ekg.py` interact with this lightweight store.
 *   **`research_assistant/`**:
-    *   `assistant_core.py` orchestrates the RAG pipeline.
-    *   Components like `EmbeddingService`, `VectorStore`, and LLM interactions in `assistant_core.py` are currently **simulated/mocked**. Future tasks will involve replacing these with real implementations (e.g., using `sentence-transformers`, FAISS/pgvector, and an actual LLM API like OpenAI). Clearly document which parts are simulated.
-    *   Refer to `AI_ENGINE_STRATEGY.md` for the planned approach.
+    *   Core RAG components (`EmbeddingService`, `VectorStore`) and LLM interactions in `assistant_core.py` (including literature summary, hypothesis generation, scenario interpretation) are **heavily simulated/mocked**.
+    *   Future development must focus on replacing these mocks with real model/API calls.
+    *   The `AI_ENGINE_STRATEGY.md` document outlines the intended path for real implementations.
 
 ## Python Style and Conventions
 

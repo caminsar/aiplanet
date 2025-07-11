@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scenario Simulator - Scientific Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .simulator-container {
+            padding: 20px;
+        }
+        .scenario-form label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .scenario-form input[type="text"],
+        .scenario-form input[type="number"],
+        .scenario_form select,
+        .scenario-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .scenario-form button {
+            padding: 10px 20px;
+            background-color: #28a745; /* Green for run */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .scenario-form button:hover {
+            background-color: #218838;
+        }
+        .results-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .results-area h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Scenario Simulator & Decision Support</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+            <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+            <li><a href="{{ url_for('visualization_bp.map_page') }}">Interactive Map</a></li>
+            <li><a href="{{ url_for('visualization_bp.chart_page') }}">Data Charts</a></li>
+            <li><a href="{{ url_for('visualization_bp.ekg_visualizer_page') }}">EKG Visualizer</a></li>
+            <li><a href="{{ url_for('visualization_bp.scenario_simulator_page') }}">Scenario Simulator</a></li>
+            <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div class="simulator-container">
+            <h2>Define and Simulate a Scenario</h2>
+            <p>This module allows for conceptual scenario simulation. Define parameters below and see a (currently placeholder) simulated output and AI interpretation.</p>
+
+            <form id="scenarioForm" class="scenario-form">
+                <fieldset>
+                    <legend>Scenario Parameters</legend>
+                    <div>
+                        <label for="scenarioName">Scenario Name:</label>
+                        <input type="text" id="scenarioName" name="scenarioName" value="Test Scenario - Rainfall Reduction">
+                    </div>
+                    <div>
+                        <label for="paramRainfallChange">Rainfall Change (%):</label>
+                        <input type="number" id="paramRainfallChange" name="paramRainfallChange" value="-20" step="5">
+                    </div>
+                    <div>
+                        <label for="paramDamOutflow">Dam Outflow Adjustment (m³/s):</label>
+                        <input type="number" id="paramDamOutflow" name="paramDamOutflow" value="0" step="100">
+                    </div>
+                    <div>
+                        <label for="paramLandUse">Land Use Change Type:</label>
+                        <select id="paramLandUse" name="paramLandUse">
+                            <option value="none" selected>None</option>
+                            <option value="urban_expansion">Urban Expansion (+10%)</option>
+                            <option value="reforestation">Reforestation (+5%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="scenarioDescription">Additional Scenario Description (optional):</label>
+                        <textarea id="scenarioDescription" name="scenarioDescription" rows="3" placeholder="e.g., Focus on Dongting Lake area for a 5-year period."></textarea>
+                    </div>
+                </fieldset>
+                <button type="button" id="runSimulationButton">Run Simulation (Conceptual)</button>
+            </form>
+
+            <div id="resultsArea" class="results-area" style="display:none;">
+                <h3>Simulation Results</h3>
+                <h4>Scenario Input Summary:</h4>
+                <pre id="scenarioInputSummary"></pre>
+                <h4>Simulated Model Output:</h4>
+                <pre id="simulatedOutput"></pre>
+                <button type="button" id="interpretResultsButton" style="background-color: #007bff;">Interpret Results with AI (Conceptual)</button>
+                <div id="aiInterpretation" style="margin-top:15px; padding-top:10px; border-top: 1px dashed #ccc;">
+                    <h4>AI Interpretation:</h4>
+                    <p id="interpretationText">Click button above to get AI interpretation.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; {{ now.year }} Scientific Analysis Platform</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const scenarioForm = document.getElementById('scenarioForm');
+            const runSimulationButton = document.getElementById('runSimulationButton');
+            const resultsArea = document.getElementById('resultsArea');
+            const scenarioInputSummary = document.getElementById('scenarioInputSummary');
+            const simulatedOutput = document.getElementById('simulatedOutput');
+            const interpretResultsButton = document.getElementById('interpretResultsButton');
+            const interpretationText = document.getElementById('interpretationText');
+
+            let currentScenarioParams = {};
+            let currentSimulatedOutput = {};
+
+            runSimulationButton.addEventListener('click', function() {
+                // Collect form data
+                currentScenarioParams = {
+                    name: document.getElementById('scenarioName').value,
+                    rainfallChangePercent: parseFloat(document.getElementById('paramRainfallChange').value),
+                    damOutflowAdjustmentM3s: parseFloat(document.getElementById('paramDamOutflow').value),
+                    landUseChange: document.getElementById('paramLandUse').value,
+                    description: document.getElementById('scenarioDescription').value
+                };
+
+                scenarioInputSummary.textContent = JSON.stringify(currentScenarioParams, null, 2);
+
+                // Simulate model output (Placeholder logic)
+                currentSimulatedOutput = {
+                    affected_area: "Middle Yangtze Reach, Dongting Lake",
+                    primary_impact_parameter: "Streamflow",
+                    change_magnitude_percent: currentScenarioParams.rainfallChangePercent * 0.8, // Simplified relation
+                    secondary_impact: "Wetland inundation patterns potentially altered.",
+                    confidence: "Conceptual Simulation - Low"
+                };
+                if (currentScenarioParams.damOutflowAdjustmentM3s !== 0) {
+                    currentSimulatedOutput.dam_impact_note = `Dam outflow adjustment of ${currentScenarioParams.damOutflowAdjustmentM3s} m³/s considered.`;
+                }
+                if (currentScenarioParams.landUseChange !== "none") {
+                     currentSimulatedOutput.land_use_note = `Land use change (${currentScenarioParams.landUseChange}) factored in.`;
+                }
+
+                simulatedOutput.textContent = JSON.stringify(currentSimulatedOutput, null, 2);
+                resultsArea.style.display = 'block';
+                interpretationText.textContent = "Click 'Interpret Results with AI' for an analysis.";
+            });
+
+            interpretResultsButton.addEventListener('click', function() {
+                if (Object.keys(currentScenarioParams).length === 0) {
+                    alert("Please run a simulation first to get results to interpret.");
+                    return;
+                }
+                interpretationText.textContent = "Requesting AI interpretation (simulated)...";
+
+                const payload = {
+                    query: "interpret simulation", // Special keyword for assistant
+                    scenario_description: JSON.stringify(currentScenarioParams), // Send as string
+                    simulated_output_text: JSON.stringify(currentSimulatedOutput) // Send as string
+                };
+
+                // This would call an API endpoint that routes to assistant_core.interpret_simulation_result
+                // For now, directly using a general query structure that assistant_core can parse
+                const assistantQuery = `interpret scenario: ${payload.scenario_description} with output: ${payload.simulated_output_text}`;
+
+                fetch("{{ url_for('assistant_api_query') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: assistantQuery })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.answer) {
+                        interpretationText.innerHTML = data.answer.replace(/\n/g, '<br>');
+                    } else {
+                        interpretationText.textContent = "Failed to get AI interpretation.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching AI interpretation:", error);
+                    interpretationText.textContent = "Error contacting AI assistant.";
+                });
+            });
+
+            // Active nav link
+            const navLinks = document.querySelectorAll('nav ul li a');
+            const currentPath = "{{ url_for('visualization_bp.scenario_simulator_page') }}";
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

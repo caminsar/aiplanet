@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EKG Visualizer - Scientific Analysis Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Vis.js Network CDN -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        #ekgNetwork {
+            width: 100%;
+            height: 600px; /* Adjust as needed */
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .vis-tooltip { /* Style for Vis.js tooltips */
+            position: absolute;
+            visibility: hidden;
+            padding: 5px;
+            white-space: nowrap;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .controls button {
+            padding: 8px 15px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Evolution Knowledge Graph (EKG) Visualizer</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('hello_world') }}">Home</a></li>
+            <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
+            <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+            <li><a href="{{ url_for('visualization_bp.map_page') }}">Interactive Map</a></li>
+            <li><a href="{{ url_for('visualization_bp.chart_page') }}">Data Charts</a></li>
+            <li><a href="{{ url_for('visualization_bp.ekg_visualizer_page') }}">EKG Visualizer</a></li>
+            <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
+        </ul>
+    </nav>
+    <main>
+        <div class="controls">
+            <button id="loadGraphButton">Load/Refresh Graph Sample</button>
+            <span id="graphStatus">Status: Idle</span>
+        </div>
+        <div id="ekgNetwork"></div>
+        <div id="nodeInfo" class="vis-tooltip"></div> <!-- Tooltip for node info -->
+    </main>
+    <footer>
+        <p>&copy; {{ now.year }} Scientific Analysis Platform</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('ekgNetwork');
+            const loadGraphButton = document.getElementById('loadGraphButton');
+            const graphStatus = document.getElementById('graphStatus');
+            const nodeInfoTooltip = document.getElementById('nodeInfo');
+            let network = null;
+
+            function formatNodeTitle(node) {
+                let title = `<b>ID:</b> ${node.id}<br><b>Type:</b> ${node.type}`;
+                if (node.properties) {
+                    for (const key in node.properties) {
+                        let value = node.properties[key];
+                        if (typeof value === 'object') {
+                            value = JSON.stringify(value, null, 2); // Pretty print JSON
+                            value = value.replace(/\\n/g, '<br>').replace(/ /g, '&nbsp;'); // Keep formatting
+                        }
+                        title += `<br><b>${key}:</b> ${value}`;
+                    }
+                }
+                return title;
+            }
+
+            function formatEdgeTitle(edge) {
+                let title = `<b>ID:</b> ${edge.id}<br><b>Type:</b> ${edge.type}`;
+                 if (edge.properties) {
+                    for (const key in edge.properties) {
+                        title += `<br><b>${key}:</b> ${edge.properties[key]}`;
+                    }
+                }
+                return title;
+            }
+
+
+            function loadAndDrawGraph() {
+                graphStatus.textContent = 'Status: Loading graph data...';
+                // API endpoint from ekg_api_bp
+                fetch("{{ url_for('ekg_api.get_ekg_graph_sample') }}")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        graphStatus.textContent = 'Status: Processing data...';
+                        const nodes = new vis.DataSet(data.nodes.map(n => ({
+                            id: n.id,
+                            label: `${n.properties.name || n.type + ':' + n.id.substring(0,6)}`, // Short label
+                            title: formatNodeTitle(n), // Full info for tooltip
+                            group: n.type, // Group by type for different colors/shapes potentially
+                            type: n.type, // Store original type
+                            properties: n.properties
+                        })));
+
+                        const edges = new vis.DataSet(data.edges.map(e => ({
+                            id: e.id,
+                            from: e.source_id,
+                            to: e.target_id,
+                            label: e.type,
+                            title: formatEdgeTitle(e),
+                            arrows: 'to',
+                            font: {align: 'horizontal', size:10},
+                            properties: e.properties
+                        })));
+
+                        const graphData = { nodes: nodes, edges: edges };
+                        const options = {
+                            layout: {
+                                hierarchical: false, // Try false for more organic layout
+                                // randomSeed: undefined,
+                                improvedLayout:true,
+                            },
+                            physics: { // Enable physics for a more dynamic layout
+                                enabled: true,
+                                barnesHut: {
+                                    gravitationalConstant: -2000,
+                                    centralGravity: 0.1,
+                                    springLength: 150,
+                                    springConstant: 0.04,
+                                    damping: 0.09,
+                                    avoidOverlap: 0.1
+                                },
+                                solver: 'barnesHut', // adaptiveTimestep:true
+                                stabilization: {iterations: 150}
+                            },
+                            nodes: {
+                                shape: 'dot', // box, circle, ellipse, database, text, diamond, dot, star, triangle, triangleDown, hexagon, square
+                                size: 12,
+                                font: { size: 10, color: '#333' },
+                                borderWidth: 1,
+                            },
+                            edges: {
+                                width: 1,
+                                color: { inherit: 'from' },
+                                smooth: {
+                                    type: 'continuous' // dynamic, continuous, discrete, diagonalCross, straightCross, horizontal, vertical, curvedCW, curvedCCW, cubicBezier
+                                }
+                            },
+                            interaction: {
+                                hover: true, // Show tooltip on hover
+                                tooltipDelay: 200,
+                                navigationButtons: true,
+                                keyboard: true
+                            },
+                            groups: { // Example groups by NodeType - customize colors/shapes
+                                TemporalEvent: { color: { background: '#FFC107', border: '#FF9800' }, shape: 'star' },
+                                EntityState: { color: { background: '#81D4FA', border: '#03A9F4' }, shape: 'box' },
+                                Wetland: { color: { background: '#AED581', border: '#7CB342' }, shape: 'ellipse'},
+                                HydrologicalStation: { color: { background: '#4FC3F7', border: '#039BE5' }, shape: 'dot', size:15},
+                                // Add more NodeType colors/shapes
+                            }
+                        };
+
+                        if (network) {
+                            network.destroy();
+                        }
+                        network = new vis.Network(container, graphData, options);
+                        graphStatus.textContent = `Status: Graph loaded (${nodes.length} nodes, ${edges.length} edges).`;
+
+                        // Custom tooltip handling (optional, vis.js has its own via 'title' property)
+                        network.on("showPopup", function (params) { // Corresponds to hoverNode event
+                            const nodeId = params;
+                            const node = nodes.get(nodeId);
+                            if (node) {
+                                nodeInfoTooltip.innerHTML = node.title; // title was pre-formatted
+                                nodeInfoTooltip.style.visibility = 'visible';
+                            }
+                        });
+                        network.on("hidePopup", function () {
+                            nodeInfoTooltip.style.visibility = 'hidden';
+                        });
+                        // Position tooltip - this is very basic
+                        network.on("hoverNode", function (params) {
+                            const nodeDOMPos = network.getPosition(params.node);
+                            const canvasPos = network.canvasToDOM(nodeDOMPos);
+                            nodeInfoTooltip.style.left = canvasPos.x + 10 + 'px';
+                            nodeInfoTooltip.style.top = canvasPos.y - 20 + 'px';
+                        });
+
+
+                    })
+                    .catch(error => {
+                        console.error('Error loading or drawing graph:', error);
+                        graphStatus.textContent = `Status: Error loading graph - ${error.message}`;
+                    });
+            }
+
+            loadGraphButton.addEventListener('click', loadAndDrawGraph);
+            loadAndDrawGraph(); // Load graph on initial page load
+
+            // Update active link
+            const navLinks = document.querySelectorAll('nav ul li a');
+            const currentPath = "{{ url_for('visualization_bp.ekg_visualizer_page') }}";
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

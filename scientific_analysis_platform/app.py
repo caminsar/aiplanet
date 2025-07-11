@@ -5,49 +5,40 @@ import datetime # For providing 'now' to templates if needed for footer year
 # Import application components
 from research_assistant.assistant_core import ResearchAssistant
 from data_management.api_routes import data_api_bp
-from visualization.routes import visualization_bp # Import the new visualization blueprint
+from visualization.routes import visualization_bp
+from ai_knowledge_graph.api_routes_ekg import ekg_api_bp # Import the new EKG API blueprint
 
 # --- Application Setup ---
 def create_app():
     base_dir = os.path.abspath(os.path.dirname(__file__))
-    # Assuming all templates and static files are primarily managed by the visualization blueprint's settings
-    # or a general app-level templates/static folder if that was the chosen structure.
-    # The visualization_bp is set up to use 'visualization/templates' and 'visualization/static'.
-    # If other blueprints need their own, they should specify their template_folder.
-    # For app-level templates like index.html, if not covered by a blueprint,
-    # Flask's default is a 'templates' folder in the app root.
-    # Let's ensure Flask app itself also knows where to find general templates if needed.
-    # For this structure, 'visualization/templates' is acting as the main template hub.
     template_dir = os.path.join(base_dir, 'visualization', 'templates')
-    static_dir = os.path.join(base_dir, 'visualization', 'static') # This is also what visualization_bp uses
+    static_dir = os.path.join(base_dir, 'visualization', 'static')
 
     os.makedirs(template_dir, exist_ok=True)
     os.makedirs(os.path.join(static_dir, 'css'), exist_ok=True)
     os.makedirs(os.path.join(static_dir, 'js'), exist_ok=True)
+    # Ensure data directory for EKG JSON file exists
+    os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
+
 
     _app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
-    _app.research_assistant_instance = ResearchAssistant(kg_querier=None, document_store=None)
+    _app.research_assistant_instance = ResearchAssistant(kg_querier=None, document_store_path=None) # Allow default doc path
 
     # Register Blueprints
     _app.register_blueprint(data_api_bp)
-    _app.register_blueprint(visualization_bp) # Register the visualization blueprint
+    _app.register_blueprint(visualization_bp)
+    _app.register_blueprint(ekg_api_bp) # Register the EKG API blueprint
 
     # Context processor to make 'now' available to all templates for the year in footer
     @_app.context_processor
     def inject_now():
         return {'now': datetime.datetime.utcnow()}
 
-    # --- Core Application Routes ---
-    # (Routes previously directly under /visualization/* are now in visualization_bp with /view/* prefix)
-    # (Routes for /assistant and /api/assistant remain here, or could be moved to their own blueprint)
-
     @_app.route('/')
     def hello_world(): # This is the homepage
         return render_template('index.html', title='Welcome')
 
-    # --- Research Assistant Routes (Consider moving to a Blueprint later) ---
-    # For now, keeping them here. If they grow, a 'assistant_bp' would be good.
     @_app.route('/assistant', methods=['GET', 'POST'])
     def assistant_page():
         query = ""
@@ -77,6 +68,10 @@ app = create_app()
 if __name__ == '__main__':
     print(f"Looking for templates in: {app.template_folder}")
     print(f"Looking for static files in: {app.static_folder}")
+    # Check for EKG data file path (from graph_builder via api_routes_ekg)
+    from ai_knowledge_graph.graph_builder import DEFAULT_GRAPH_DATA_PATH
+    print(f"EKG data file expected at: {DEFAULT_GRAPH_DATA_PATH}")
+
 
     index_html_path = os.path.join(app.template_folder, 'index.html')
     if not os.path.exists(index_html_path):
@@ -96,10 +91,12 @@ if __name__ == '__main__':
         <li><a href="{{ url_for('hello_world') }}">Home</a></li>
         <li><a href="{{ url_for('visualization_bp.home') }}">Visualization Hub</a></li>
         <li><a href="{{ url_for('visualization_bp.data_catalog_page') }}">Data Catalog</a></li>
+        <li><a href="{{ url_for('visualization_bp.ekg_visualizer_page') }}">EKG Visualizer</a></li>
         <li><a href="{{ url_for('assistant_page') }}">Research Assistant</a></li>
         <li><a href="{{ url_for('data_api.list_stations') }}">Stations API</a></li>
+        <li><a href="{{ url_for('ekg_api.ekg_health_check') }}">EKG API Health</a></li>
     </ul></nav>
-    <main><h2>Welcome!</h2><p>This is the main entry point to the platform. Check out the <a href="{{ url_for('data_api.health_check') }}">Data API Health</a>.</p></main>
+    <main><h2>Welcome!</h2><p>This is the main entry point to the platform. Check out the Data API Health and EKG API Health.</p></main>
     <footer><p>&copy; {{ now.year }} Scientific Analysis Platform</p></footer>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body></html>""")
