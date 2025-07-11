@@ -7,6 +7,13 @@ psycopg2-binary>=2.9,<3.0 # PostgreSQL adapter for Python (binary version for ea
 requests>=2.25,<3.0.0    # For making HTTP requests (e.g., internal API calls in visualization routes)
 python-dateutil>=2.8,<3.0 # For flexible datetime parsing (used in station_reading_importer)
 shapely>=2.0,<3.0 # For geometry object manipulation (used with GeoAlchemy2)
+numpy>=1.20,<2.0 # For numerical operations, used in simulated AI components
+
+# --- AI/NLQ Related (mostly conceptual for now) ---
+sentence-transformers>=2.2.0,<3.0.0 # For text embeddings (simulated in this phase)
+# faiss-cpu>=1.7.0,<2.0.0 # For vector storage (conceptual, store simulated in this phase)
+# openai>=0.27.0,<1.0.0 # For interacting with OpenAI LLMs (conceptual, API calls mocked)
+
 
 # Future dependencies might include:
 
@@ -15,14 +22,11 @@ shapely>=2.0,<3.0 # For geometry object manipulation (used with GeoAlchemy2)
 
 # For more advanced data handling and numerical operations:
 # pandas
-# numpy
 # geopandas (already covered by shapely for basic geometry, but pandas integration is useful)
 # xarray
+# scipy # For more advanced spatial analysis, interpolation
 
-# For AI/ML tasks (if models are run within the platform's Python env):
+# For AI/ML tasks (if models are run within the platform's Python env beyond RAG):
 # scikit-learn
 # tensorflow
 # torch
-
-# For interacting with external LLMs or services:
-# openai

@@ -8,10 +8,10 @@ The platform integrates data management, model integration, visualization analys
 
 To provide an advanced analytical environment that empowers researchers to:
 - Manage and access diverse spatio-temporal datasets using a PostGIS enabled database.
-- Integrate and run various scientific models (hydrological, ecological, etc.).
+- Integrate and run various scientific models (hydrological, ecological, etc.) via wrapper interfaces.
 - Visualize complex data and model outputs interactively (maps, charts).
-- Explore system-level evolution patterns and relationships through an AI-driven knowledge graph.
-- Leverage an AI research assistant for querying information, literature review, and report generation.
+- Explore system-level evolution patterns and relationships through an AI-driven knowledge graph (conceptual).
+- Leverage an AI research assistant with Natural Language Query (NLQ) capabilities (prototype using RAG with simulated components) for querying information.
 
 ## Modules
 
@@ -22,20 +22,27 @@ The platform is structured into the following core modules:
     -   `models.py`: SQLAlchemy models for the PostGIS database schema (using GeoAlchemy2).
     -   `api_routes.py`: Flask Blueprint for data-related backend APIs.
     -   `importers/`: Scripts to import data from various sources (e.g., CSV, GeoJSON) into the database.
+    -   `spatial_analysis.py`: Conceptual placeholders for spatio-temporal matching and interpolation.
+    -   `data_fusion.py`: Conceptual interface for data fusion strategies.
     -   `DATA_ACQUISITION_CHECKLIST.md`: Lists required datasets and their characteristics.
     -   `DATA_STANDARDIZATION_GUIDE.md`: Outlines data standardization procedures.
-3.  **Model Integration (`model_integration/`)**: Facilitates integration and management of scientific models. (Skeleton)
+3.  **Model Integration (`model_integration/`)**: Facilitates integration and management of scientific models.
     -   `model_interface.py`: Defines the `ScientificModel` abstract base class.
     -   `model_manager.py`: Manages model lifecycle.
+    -   `models/`: Contains conceptual wrappers for specific models (e.g., `MaxEntModelWrapper`, `SWATModelWrapper`, `VICModelWrapper`).
 4.  **Visualization (`visualization/`)**: Provides tools for interactive web-based visualization.
     -   `routes.py`: Flask Blueprint for visualization-related web pages (Data Catalog, Map, Charts).
     -   `templates/`: HTML templates (using Leaflet.js for maps, Chart.js for charts).
     -   `static/`: CSS and JavaScript files.
-5.  **AI Knowledge Graph (`ai_knowledge_graph/`)**: For building and querying an AI-enhanced knowledge graph. (Skeleton)
+5.  **AI Knowledge Graph (`ai_knowledge_graph/`)**: For building and querying an AI-enhanced knowledge graph. (Conceptual Skeleton)
     -   `graph_schema.py`: Conceptual schema definition.
     -   `graph_builder.py`, `graph_querier.py`: Placeholder classes.
-6.  **Research Assistant (`research_assistant/`)**: AI-powered assistant. (Basic placeholder)
-    -   `assistant_core.py`: Core logic.
+6.  **Research Assistant (`research_assistant/`)**: AI-powered assistant with prototype NLQ.
+    -   `assistant_core.py`: Core logic, including a (simulated) RAG pipeline.
+    -   `document_processor.py`: For loading and chunking text for RAG.
+    -   `embedding_service.py`: Simulates text embedding generation.
+    -   `vector_store.py`: Simulates an in-memory vector store.
+    -   `AI_ENGINE_STRATEGY.md`: Outlines the strategy for LLM and RAG integration.
 7.  **Application (`app.py`)**: The main Flask web application entry point, routing, and initialization.
 8.  **Sample Data (`sample_data/`)**: Contains sample CSV and GeoJSON files for initial data import.
 9.  **Tests (`tests/`)**: For unit and integration tests. (To be developed)
@@ -135,7 +142,7 @@ Open your web browser and navigate to `http://localhost:5000`. You should see:
 *   Interactive Map (`/view/map`) showing station locations.
 *   Data Charts (`/view/chart`) allowing selection of stations and parameters.
 *   Data Catalog (`/view/catalog`) listing available data types.
-*   Research Assistant (`/assistant`).
+*   Research Assistant (`/assistant`) - try asking questions related to the content of `README.md` (e.g., "What are the modules of this platform?").
 *   Data APIs (e.g., `/api/data/stations`, `/api/data/wetlands`).
 
 ### Stopping the Database
@@ -151,15 +158,17 @@ docker-compose down -v
 
 ## Current Status
 
-The project has a foundational skeleton with:
+The project has advanced its prototype with:
 - Dockerized PostGIS setup.
 - Defined database schema using SQLAlchemy and GeoAlchemy2.
 - Sample data importers.
 - Backend APIs for accessing station and wetland data.
 - Frontend prototypes for data catalog, map visualization (Leaflet), and chart visualization (Chart.js).
-- Basic Research Assistant placeholder.
+- **Conceptual placeholders** for advanced spatio-temporal analysis and data fusion.
+- **Conceptual wrappers** for mechanistic models (MaxEnt, SWAT, VIC).
+- **Foundational (simulated/mocked) AI engine components** for a RAG-based Natural Language Query (NLQ) system, currently using `README.md` as its knowledge source.
 
-Next steps will involve further development of each module, adding more complex features, and refining the existing ones.
+Next steps will involve fleshing out these conceptual components, integrating real AI services, and adding more sophisticated analytical and modeling capabilities.
 
 ## Contributing (Placeholder)
 
