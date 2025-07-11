@@ -1,0 +1,169 @@
+{
+  "nodes": [
+    {
+      "id": "station_YIC",
+      "type": "HydrologicalStation",
+      "properties": {
+        "name": "Yichang Station",
+        "river": "Yangtze"
+      }
+    },
+    {
+      "id": "event_Flood98",
+      "type": "TemporalEvent",
+      "properties": {
+        "event_type": "MajorFlood",
+        "year": 1998,
+        "description": "1998 Yangtze Flood",
+        "start_date": "1998-07-01T00:00:00Z",
+        "end_date": "1998-08-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "state_YIC_preFlood98",
+      "type": "EntityState",
+      "properties": {
+        "entity_ref_id": "station_YIC",
+        "entity_type_str": "HydrologicalStation",
+        "state_timestamp": "1998-06-01T00:00:00Z",
+        "state_data_json": {
+          "status": "normal",
+          "water_level_m": 50.5
+        }
+      }
+    },
+    {
+      "id": "state_YIC_postFlood98",
+      "type": "EntityState",
+      "properties": {
+        "entity_ref_id": "station_YIC",
+        "entity_type_str": "HydrologicalStation",
+        "state_timestamp": "1998-09-01T00:00:00Z",
+        "state_data_json": {
+          "status": "affected",
+          "damage_level": 3,
+          "water_level_m": 58.2
+        }
+      }
+    },
+    {
+      "id": "WL001",
+      "type": "Wetland",
+      "properties": {
+        "name": "East Dongting Sample Patch",
+        "region": "Dongting Lake"
+      }
+    },
+    {
+      "id": "WL001_State_2000",
+      "type": "EntityState",
+      "properties": {
+        "entity_ref_id": "WL001",
+        "entity_type_str": "Wetland",
+        "state_timestamp": "2000-06-15T00:00:00Z",
+        "state_data_json": {
+          "area_sqkm": 150.0,
+          "vegetation_cover_percent": 80,
+          "dominant_species": "Phragmites australis"
+        },
+        "source_of_state_data": "Remote Sensing Analysis (Simulated)"
+      }
+    },
+    {
+      "id": "WL001_State_2010",
+      "type": "EntityState",
+      "properties": {
+        "entity_ref_id": "WL001",
+        "entity_type_str": "Wetland",
+        "state_timestamp": "2010-07-20T00:00:00Z",
+        "state_data_json": {
+          "area_sqkm": 120.0,
+          "vegetation_cover_percent": 65,
+          "dominant_species": "Carex spp."
+        },
+        "source_of_state_data": "Field Survey & RS (Simulated)"
+      }
+    },
+    {
+      "id": "TGD_Ops_2009",
+      "type": "TemporalEvent",
+      "properties": {
+        "event_type": "DamOperation",
+        "name": "Three Gorges Dam Full Operation",
+        "description": "TGD reached full operational capacity, significantly altering downstream flow and sediment regimes.",
+        "start_date": "2009-01-01T00:00:00Z",
+        "end_date": "2009-12-31T00:00:00Z"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_YIC_hasStatePre",
+      "source_id": "station_YIC",
+      "target_id": "state_YIC_preFlood98",
+      "type": "HAS_STATE",
+      "properties": {}
+    },
+    {
+      "id": "edge_YIC_hasStatePost",
+      "source_id": "station_YIC",
+      "target_id": "state_YIC_postFlood98",
+      "type": "HAS_STATE",
+      "properties": {}
+    },
+    {
+      "id": "edge_YIC_stateTransition",
+      "source_id": "state_YIC_preFlood98",
+      "target_id": "state_YIC_postFlood98",
+      "type": "TRANSITIONS_TO_STATE",
+      "properties": {
+        "trigger_event_ref_id": "event_Flood98",
+        "reason": "Impact of major flood event"
+      }
+    },
+    {
+      "id": "edge_YIC_state_influencedByFlood",
+      "source_id": "state_YIC_postFlood98",
+      "target_id": "event_Flood98",
+      "type": "INFLUENCED_BY_EVENT",
+      "properties": {
+        "impact_description": "Station operations disrupted, infrastructure damage reported."
+      }
+    },
+    {
+      "id": "edge_WL001_hasState2000",
+      "source_id": "WL001",
+      "target_id": "WL001_State_2000",
+      "type": "HAS_STATE",
+      "properties": {}
+    },
+    {
+      "id": "edge_WL001_hasState2010",
+      "source_id": "WL001",
+      "target_id": "WL001_State_2010",
+      "type": "HAS_STATE",
+      "properties": {}
+    },
+    {
+      "id": "edge_WL001_state2000_transitions_to_state2010",
+      "source_id": "WL001_State_2000",
+      "target_id": "WL001_State_2010",
+      "type": "TRANSITIONS_TO_STATE",
+      "properties": {
+        "reason": "Long-term evolution, potential influence of upstream activities.",
+        "duration_of_transition_years": 10
+      }
+    },
+    {
+      "id": "edge_WL001_state2010_influencedBy_TGD",
+      "source_id": "WL001_State_2010",
+      "target_id": "TGD_Ops_2009",
+      "type": "INFLUENCED_BY_EVENT",
+      "properties": {
+        "impact_description": "Reduced sediment input and altered hydrological regime contributing to state change.",
+        "confidence_score": 0.7,
+        "supporting_evidence_ref": "paper2_summary_wetlands.txt"
+      }
+    }
+  ]
+}

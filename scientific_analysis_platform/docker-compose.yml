@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  db_postgis:
+    image: postgis/postgis:15-3.4
+    container_name: scientific_platform_postgis_db
+    environment:
+      # Use .env file or provide defaults here
+      POSTGRES_USER: ${POSTGRES_USER:-platform_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-platform_secret_password}
+      POSTGRES_DB: ${POSTGRES_DB:-scientific_platform_dev}
+    ports:
+      # Map host port (left, from .env or default 5432) to container port (right, fixed 5432)
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      # Uses the actual environment variables set for the service
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -q"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web_app:
+    build:
+      context: . # Dockerfile is in the same directory as docker-compose.yml
+      dockerfile: Dockerfile
+    container_name: scientific_platform_web_app
+    ports:
+      - "5000:5000" # Map host port 5000 to container port 5000 (where Flask runs)
+    volumes:
+      # Mount the application code into the container for development (reflects changes without rebuilding image)
+      # For production, you might remove this and rely on the code baked into the image.
+      - .:/app
+      # Volume for the EKG data file to persist changes made via API
+      # Mounts the host's ./data directory to /app/data in the container.
+      # app.py already creates ./data if not exists, which is good.
+      - ./data:/app/data
+    depends_on:
+      db_postgis:
+        condition: service_healthy # Wait for DB to be healthy before starting web_app
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development # Enables debug mode, auto-reloader
+      FLASK_RUN_HOST: '0.0.0.0'
+      # Important: Use the service name 'db_postgis' as the hostname for the database URL
+      # The variables for user, password, dbname, and port should match those used for db_postgis service.
+      # Docker Compose handles variable substitution from .env or defaults.
+      POSTGRES_DB_URL: "postgresql://${POSTGRES_USER:-platform_user}:${POSTGRES_PASSWORD:-platform_secret_password}@db_postgis:5432/${POSTGRES_DB:-scientific_platform_dev}"
+      # Any other environment variables your Flask app needs
+      # For example, if you had an OpenAI API key:
+      # OPENAI_API_KEY: ${OPENAI_API_KEY}
+    restart: unless-stopped
+
+volumes:
+  postgis_data: # Named volume for persisting PostgreSQL data
+
+# To use this:
+# 1. Ensure Docker and Docker Compose are installed.
+# 2. (Optional) Create a .env file in this directory (scientific_analysis_platform/) to customize variables:
+#    POSTGRES_USER=myuser
+#    POSTGRES_PASSWORD=mypassword
+#    POSTGRES_DB=mydb
+#    POSTGRES_PORT=5433 # Host port for PostGIS
+#    # OPENAI_API_KEY=your_openai_key_here (if using real OpenAI)
+# 3. Run `docker-compose up --build -d`. The `--build` flag is important if you change Dockerfile or app code.
+#    The `-d` runs it in detached mode.
+# 4. The platform will be accessible at http://localhost:5000.
+# 5. The PostGIS database will be accessible on localhost at the host port specified by POSTGRES_PORT (or default 5432).
+# 6. To initialize DB schema and import data *after* containers are up:
+#    - If you haven't run importers before:
+#      `docker-compose exec web_app python -m scientific_analysis_platform.data_management.models`
+#      `docker-compose exec web_app python -m scientific_analysis_platform.data_management.run_importers`
+#    - The EKG JSON file (`data/evolution_graph_data.json`) is volume-mounted, so changes made via API will persist on the host.
+# 7. To see logs: `docker-compose logs -f web_app` or `docker-compose logs -f db_postgis`
+# 8. To stop: `docker-compose down`
+# 9. To remove the volume (and all data): `docker-compose down -v`
+#
+# Notes on `$$` in healthcheck:
+# In docker-compose.yml, `$$VAR` is used to escape the `$` so that `VAR` is treated as a shell variable
+# inside the container, rather than a docker-compose variable. This allows pg_isready to use the
+# environment variables set *within* the db_postgis container.
+#
+# FLASK_ENV=development enables Flask's reloader. If you change Python code in the mounted volume (.),
+# the Flask development server inside the container should automatically restart.
