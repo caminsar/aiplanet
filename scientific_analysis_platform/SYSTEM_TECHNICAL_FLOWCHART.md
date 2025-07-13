@@ -54,7 +54,8 @@ graph TD
     C1 -- Interacts with --> D1
     C2 -- Interacts with (conceptual) --> D3
     C3 -- Interacts with --> D2
-    C4 -- Interacts with --> C3 & D4
+    C4 -- Interacts with --> C3
+    C4 -- Interacts with --> D4
 
     style User Interface fill:#d4edda,stroke:#155724
     style Backend fill:#cce5ff,stroke:#004085
